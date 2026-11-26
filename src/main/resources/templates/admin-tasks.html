@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Tasks')}"></head>
+<body>
+
+<header th:replace="~{fragments/layout :: topbar}"></header>
+
+<div class="shell">
+    <aside th:replace="~{fragments/layout :: sidebar(${active})}"></aside>
+
+    <main class="content" id="main">
+        <div class="stack">
+
+            <section class="card" aria-labelledby="task-title">
+                <header class="card__head">
+                    <h1 class="card__title" id="task-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+                        Give a task
+                    </h1>
+                </header>
+
+                <p class="notice" th:if="${message}" role="status" th:text="${message}">Saved.</p>
+                <p class="notice notice--error" th:if="${error}" role="alert" th:text="${error}">Error.</p>
+
+                <p class="empty" th:if="${#lists.isEmpty(recipients)}">
+                    There is nobody to give tasks to yet. Ask the super admin to put you and your teachers in a department.
+                </p>
+
+                <form class="upload" method="post" th:action="@{/admin/tasks}" th:object="${form}"
+                      th:unless="${#lists.isEmpty(recipients)}">
+                    <div class="field">
+                        <label for="to">Give it to</label>
+                        <select id="to" name="to">
+                            <option th:each="r : ${recipients}" th:value="${r.value}" th:text="${r.label}"
+                                    th:selected="${r.value == form.to}">All teachers in my department</option>
+                        </select>
+                        <p class="field-error" th:if="${#fields.hasErrors('to')}" th:errors="*{to}">Error</p>
+                    </div>
+                    <div class="field">
+                        <label for="title">Task</label>
+                        <input id="title" name="title" type="text" maxlength="120" autocomplete="off"
+                               placeholder="e.g. Submit Q2 grades" th:value="*{title}">
+                        <p class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Error</p>
+                    </div>
+                    <div class="field">
+                        <label for="due">Due date (optional)</label>
+                        <input id="due" name="due" type="date" th:value="*{due}">
+                        <p class="field-error" th:if="${#fields.hasErrors('due')}">Enter a valid date.</p>
+                    </div>
+                    <button class="btn" type="submit">Give task</button>
+                </form>
+            </section>
+
+            <section class="card" aria-labelledby="given-title">
+                <header class="card__head">
+                    <h2 class="card__title" id="given-title">Tasks you gave</h2>
+                </header>
+
+                <p class="empty" th:if="${#lists.isEmpty(assigned)}">You haven't given any tasks yet.</p>
+
+                <div class="table-wrap" th:unless="${#lists.isEmpty(assigned)}">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Task</th>
+                                <th scope="col">Teacher</th>
+                                <th scope="col">Due</th>
+                                <th scope="col">Status</th>
+                                <th scope="col"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${assigned}">
+                                <td class="file-name" th:text="${t.title}">Submit grades</td>
+                                <td th:text="${t.teacher}">Ana Reyes</td>
+                                <td th:text="${t.due}">Nov 30, 2026</td>
+                                <td><span class="badge" th:classappend="${t.done} ? 'badge--ok'" th:text="${t.done} ? 'Done' : 'Open'">Open</span></td>
+                                <td>
+                                    <div class="actions">
+                                        <form th:action="@{/admin/tasks/{id}/delete(id=${t.id})}" method="post"
+                                              onsubmit="return confirm('Remove this task from the teacher?')">
+                                            <button type="submit" class="pill pill--sm pill--danger"
+                                                    th:attr="aria-label='Remove task ' + ${t.title}">Remove</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+</body>
+</html>

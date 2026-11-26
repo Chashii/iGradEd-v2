@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="16" fill="#0f766e"/>
+  <!-- graduation cap -->
+  <path d="M32 14 8 26l24 12 24-12z" fill="#ffffff"/>
+  <path d="M18 32v10c0 3 6.5 7 14 7s14-4 14-7V32l-14 7z" fill="#ffffff" opacity=".85"/>
+  <path d="M54 27v14" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="54" cy="43" r="3" fill="#f59e0b"/>
+</svg>

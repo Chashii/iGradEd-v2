@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Home')}"></head>
+<body>
+
+<header th:replace="~{fragments/layout :: topbar}"></header>
+
+<div class="shell">
+    <aside th:replace="~{fragments/layout :: sidebar(${active})}"></aside>
+
+    <main class="content" id="main">
+        <h1 class="sr-only">Home</h1>
+
+        <div class="dashboard">
+
+            <!-- Center: news / announcement banner -->
+            <section class="card news" aria-labelledby="news-title">
+                <header class="card__head">
+                    <h2 class="card__title" id="news-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l5 4V6L6 10H4a1 1 0 00-1 1zM15 9a4 4 0 010 6M18 6a8 8 0 010 12"/></svg>
+                        News &amp; Announcements
+                    </h2>
+                    <button type="button" class="icon-btn icon-btn--sm" id="banner-pause"
+                            aria-label="Pause slideshow" aria-pressed="false">
+                        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+                        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>
+                    </button>
+                </header>
+
+                <div class="banner" id="banner" aria-roledescription="carousel" aria-label="Announcements">
+                    <div class="banner__viewport">
+                        <div class="banner__track" id="banner-track">
+                            <article class="slide slide--news" th:if="${#lists.isEmpty(announcements)}"
+                                     role="group" aria-roledescription="slide">
+                                <div class="slide__meta"><span class="chip">News</span></div>
+                                <h3 class="slide__title">No announcements right now</h3>
+                                <p class="slide__body">New announcements from your department head will show up here.</p>
+                            </article>
+                            <article class="slide" th:each="a, st : ${announcements}"
+                                     th:classappend="'slide--' + ${a.type}"
+                                     role="group" aria-roledescription="slide"
+                                     th:attr="aria-label=${st.count + ' of ' + st.size}">
+                                <div class="slide__meta">
+                                    <span class="chip" th:text="${a.label}">News</span>
+                                    <time class="slide__date" th:text="${a.date}">Nov 19, 2026</time>
+                                </div>
+                                <h3 class="slide__title" th:text="${a.title}">Title</h3>
+                                <p class="slide__body" th:text="${a.body}">Body</p>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="banner__controls" th:if="${#lists.size(announcements) > 1}">
+                        <button type="button" class="banner__btn" id="banner-prev" aria-label="Previous announcement">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                        </button>
+                        <div class="banner__dots" id="banner-dots" role="tablist" aria-label="Choose announcement">
+                            <button type="button" class="dot" th:each="a, st : ${announcements}"
+                                    role="tab" th:attr="aria-label='Announcement ' + ${st.count}"></button>
+                        </div>
+                        <button type="button" class="banner__btn" id="banner-next" aria-label="Next announcement">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right column: calendar, then to-do -->
+            <div class="dashboard__side">
+
+                <section class="calendar card" aria-labelledby="cal-title">
+                    <header class="card__head">
+                        <h2 class="card__title">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                            Calendar
+                        </h2>
+                        <a class="pill pill--sm" th:unless="${calendar.current}" th:href="@{/}">Today</a>
+                    </header>
+
+                    <div class="calendar__nav">
+                        <a class="icon-btn icon-btn--sm"
+                           th:href="@{/(year=${calendar.previous.year}, month=${calendar.previous.monthValue})}"
+                           aria-label="Previous month">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                        </a>
+                        <h3 class="calendar__title" id="cal-title" th:text="${calendar.title}">November 2026</h3>
+                        <a class="icon-btn icon-btn--sm"
+                           th:href="@{/(year=${calendar.next.year}, month=${calendar.next.monthValue})}"
+                           aria-label="Next month">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    </div>
+
+                    <div class="calendar__grid" role="grid" th:attr="aria-label=${calendar.title}">
+                        <div class="calendar__weekdays" role="row">
+                            <div class="weekday" role="columnheader" th:each="w : ${weekdays}"
+                                 th:text="${#strings.substring(w, 0, 1)}" th:attr="aria-label=${w}">S</div>
+                        </div>
+
+                        <div class="calendar__week" role="row" th:each="week : ${calendar.weeks}">
+                            <div class="day" role="gridcell" th:each="d : ${week}"
+                                 th:classappend="${(d.inMonth ? '' : 'is-outside ') + (d.weekend ? 'is-weekend ' : '') + (d.today ? 'is-today' : '')}"
+                                 th:attr="aria-label=${d.label}, aria-current=${d.today ? 'date' : null}">
+                                <span class="day__num" th:text="${d.dayOfMonth}">1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="calendar__today" th:text="'Today is ' + ${todayText}">Today is Thursday</p>
+                </section>
+
+                <section class="todo card" id="todo" aria-labelledby="todo-title">
+                    <header class="card__head">
+                        <h2 class="card__title" id="todo-title">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+                            To-do
+                        </h2>
+                        <button type="button" class="icon-btn icon-btn--sm" id="todo-add"
+                                aria-label="Add a task" th:attr="aria-expanded=${todoError != null}"
+                                aria-controls="todo-form">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                    </header>
+
+                    <form class="todo__form" id="todo-form" method="post" th:action="@{/todos}"
+                          th:hidden="${todoError == null}">
+                        <input type="text" id="todo-input" name="title" maxlength="120" placeholder="New task"
+                               aria-label="New task" autocomplete="off" required>
+                        <input type="date" name="due" aria-label="Due date (optional)">
+                        <button type="submit" class="pill pill--sm">Add</button>
+                    </form>
+                    <p class="notice notice--error" th:if="${todoError}" role="alert" th:text="${todoError}">Error.</p>
+
+                    <p class="todo__summary" id="todo-summary" aria-live="polite" th:text="${todoSummary}"></p>
+
+                    <ul class="todo__list" id="todo-list">
+                        <li class="todo__item" th:each="t : ${todos}"
+                            th:classappend="${t.done} ? 'is-done'" th:attr="data-id=${t.id}">
+                            <label>
+                                <input type="checkbox" th:checked="${t.done}"
+                                       th:attr="aria-label='Mark done: ' + ${t.title}">
+                                <span class="todo__text">
+                                    <span class="todo__title" th:text="${t.title}">Task</span>
+                                    <small class="todo__due" th:classappend="${t.overdue} ? 'is-overdue'"
+                                           th:if="${t.detail != null and !t.detail.isEmpty()}" th:text="${t.detail}">Due soon</small>
+                                </span>
+                            </label>
+                            <form th:unless="${t.assigned}" method="post" th:action="@{/todos/{id}/delete(id=${t.id})}">
+                                <button type="submit" class="todo__del"
+                                        th:attr="aria-label='Delete task: ' + ${t.title}">&times;</button>
+                            </form>
+                        </li>
+                    </ul>
+                </section>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+</body>
+</html>

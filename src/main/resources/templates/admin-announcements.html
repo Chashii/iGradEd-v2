@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Announcements')}"></head>
+<body>
+
+<header th:replace="~{fragments/layout :: topbar}"></header>
+
+<div class="shell">
+    <aside th:replace="~{fragments/layout :: sidebar(${active})}"></aside>
+
+    <main class="content" id="main">
+        <div class="stack">
+
+            <section class="card" aria-labelledby="ann-title">
+                <header class="card__head">
+                    <h1 class="card__title" id="ann-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l5 4V6L6 10H4a1 1 0 00-1 1zM15 9a4 4 0 010 6M18 6a8 8 0 010 12"/></svg>
+                        <span th:text="${editingId != null} ? 'Edit announcement' : 'Post an announcement'">Post an announcement</span>
+                    </h1>
+                    <a class="pill pill--sm" th:if="${editingId != null}" th:href="@{/admin/announcements}">Cancel</a>
+                </header>
+
+                <p class="notice" th:if="${message}" role="status" th:text="${message}">Saved.</p>
+                <p class="notice notice--error" th:if="${error}" role="alert" th:text="${error}">Error.</p>
+
+                <form class="upload" method="post" th:object="${form}"
+                      th:action="${editingId != null} ? @{/admin/announcements/{id}(id=${editingId})} : @{/admin/announcements}">
+                    <div class="field">
+                        <label for="kind">Type</label>
+                        <select id="kind" name="kind">
+                            <option th:each="k : ${kinds}" th:value="${k}" th:text="${k.label}"
+                                    th:selected="${k == form.kind}">News</option>
+                        </select>
+                        <p class="field-error" th:if="${#fields.hasErrors('kind')}" th:errors="*{kind}">Error</p>
+                    </div>
+                    <div class="field">
+                        <label for="audience">Who sees it</label>
+                        <select id="audience" name="audience">
+                            <option th:each="a : ${audiences}" th:value="${a.value}" th:text="${a.label}"
+                                    th:selected="${a.value == form.audience}">Whole school</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="title">Title</label>
+                        <input id="title" name="title" type="text" maxlength="120" autocomplete="off" th:value="*{title}">
+                        <p class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Error</p>
+                    </div>
+                    <div class="field">
+                        <label for="body">Message</label>
+                        <textarea id="body" name="body" rows="3" maxlength="500" th:text="*{body}"></textarea>
+                        <p class="field-error" th:if="${#fields.hasErrors('body')}" th:errors="*{body}">Error</p>
+                    </div>
+                    <div class="field">
+                        <label for="eventOn">Event or meeting date (optional)</label>
+                        <input id="eventOn" name="eventOn" type="date" th:value="*{eventOn}">
+                    </div>
+                    <div class="field">
+                        <label for="publishedOn">Show from (optional)</label>
+                        <input id="publishedOn" name="publishedOn" type="date" th:value="*{publishedOn}">
+                        <p class="field-hint">Leave empty to show it today.</p>
+                    </div>
+                    <div class="field">
+                        <label for="expiresOn">Hide after (optional)</label>
+                        <input id="expiresOn" name="expiresOn" type="date" th:value="*{expiresOn}">
+                        <p class="field-hint">Leave empty to keep showing it.</p>
+                    </div>
+                    <button class="btn" type="submit" th:text="${editingId != null} ? 'Save changes' : 'Post'">Post</button>
+                </form>
+            </section>
+
+            <section class="card" aria-labelledby="list-title">
+                <header class="card__head">
+                    <h2 class="card__title" id="list-title">Announcements you can manage</h2>
+                </header>
+
+                <p class="empty" th:if="${#lists.isEmpty(rows)}">Nothing posted yet.</p>
+
+                <div class="table-wrap" th:unless="${#lists.isEmpty(rows)}">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Title</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Who sees it</th>
+                                <th scope="col">Dates</th>
+                                <th scope="col">Status</th>
+                                <th scope="col"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${rows}">
+                                <td class="file-name" th:text="${r.title}">Staff meeting</td>
+                                <td><span class="badge" th:text="${r.kind}">Meeting</span></td>
+                                <td th:text="${r.audience}">Whole school</td>
+                                <td th:text="${r.dates}">Nov 20 – Nov 30</td>
+                                <td th:text="${r.status}">Showing</td>
+                                <td>
+                                    <div class="actions">
+                                        <a class="pill pill--sm" th:href="@{/admin/announcements(edit=${r.id})}"
+                                           th:attr="aria-label='Edit ' + ${r.title}">Edit</a>
+                                        <form th:action="@{/admin/announcements/{id}/delete(id=${r.id})}" method="post"
+                                              onsubmit="return confirm('Delete this announcement?')">
+                                            <button type="submit" class="pill pill--sm pill--danger"
+                                                    th:attr="aria-label='Delete ' + ${r.title}">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+</body>
+</html>

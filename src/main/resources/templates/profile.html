@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Profile')}"></head>
+<body>
+
+<header th:replace="~{fragments/layout :: topbar}"></header>
+
+<div class="shell">
+    <aside th:replace="~{fragments/layout :: sidebar(${active})}"></aside>
+
+    <main class="content" id="main">
+        <section class="card profile" aria-labelledby="profile-title">
+            <h1 class="profile__name" id="profile-title" th:text="${me.fullName}">Full Name</h1>
+            <span class="badge" th:text="${me.role.label}">Teacher</span>
+
+            <dl class="profile__list">
+                <dt>Email</dt>
+                <dd th:text="${me.email}">name@example.com</dd>
+                <dt>Role</dt>
+                <dd th:text="${me.role.label}">Teacher</dd>
+                <dt>Member since</dt>
+                <dd th:text="${#temporals.format(me.createdOn, 'MMM d, yyyy')}">Nov 20, 2026</dd>
+            </dl>
+
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="pill">Log out</button>
+            </form>
+        </section>
+    </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+</body>
+</html>

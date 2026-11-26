@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Locker')}"></head>
+<body>
+
+<header th:replace="~{fragments/layout :: topbar}"></header>
+
+<div class="shell">
+    <aside th:replace="~{fragments/layout :: sidebar(${active})}"></aside>
+
+    <main class="content" id="main">
+        <div class="locker">
+
+            <!-- Title, messages and space used -->
+            <section class="card" aria-labelledby="locker-title">
+                <header class="card__head">
+                    <h1 class="card__title" id="locker-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+                        Locker
+                    </h1>
+                    <a class="pill pill--sm" th:if="${totalCount > 0}" th:href="@{/locker/export}">Export all (ZIP)</a>
+                </header>
+
+                <p class="notice" th:if="${saved != null and saved > 0}" role="status"
+                   th:text="${saved == 1 ? '1 file uploaded.' : saved + ' files uploaded.'}">2 files uploaded.</p>
+
+                <div class="notice notice--error" th:if="${problems != null and !#lists.isEmpty(problems)}" role="alert">
+                    <p>Some files were not uploaded:</p>
+                    <ul class="problems">
+                        <li th:each="p : ${problems}" th:text="${p}">file.exe: this file type is not allowed.</li>
+                    </ul>
+                </div>
+
+                <p class="notice" th:if="${deleted}" role="status">File deleted.</p>
+                <p class="notice notice--error" th:if="${param.tooBig}" role="alert"
+                   th:text="'That upload was too large. Each file can be up to ' + ${maxFileLabel} + ', and one upload up to 100 MB.'">Too large.</p>
+                <p class="notice" th:if="${param.empty}" role="status">There are no files to export yet.</p>
+
+                <div class="usage">
+                    <p class="usage__text">
+                        <strong th:text="${usage.usedLabel}">0 B</strong> of
+                        <span th:text="${usage.quotaLabel}">2 GB</span> used
+                    </p>
+                    <div class="usage__bar" role="progressbar" aria-label="Locker space used"
+                         aria-valuemin="0" aria-valuemax="100"
+                         th:attr="aria-valuenow=${usage.percent}"
+                         th:classappend="${usage.high} ? 'is-high'">
+                        <span th:style="'width:' + ${usage.percent} + '%'"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upload -->
+            <section class="card" aria-labelledby="upload-title">
+                <header class="card__head">
+                    <h2 class="card__title" id="upload-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
+                        Upload files
+                    </h2>
+                </header>
+
+                <!-- The CSRF token is also put in the address because this form is multipart -->
+                <form class="upload" id="upload-form" method="post" enctype="multipart/form-data"
+                      th:action="@{/locker/upload(_csrf=${_csrf.token})}"
+                      th:attr="data-max=${maxFileBytes}, data-remaining=${usage.remainingBytes}">
+                    <div class="field">
+                        <label for="folder">Folder</label>
+                        <input id="folder" name="folder" type="text" list="folder-list" maxlength="60"
+                               placeholder="General" autocomplete="off" th:value="${selectedFolder}">
+                        <datalist id="folder-list">
+                            <option th:each="f : ${folders}" th:value="${f.name}"></option>
+                        </datalist>
+                        <p class="field-hint">Pick one you already have, or type a new name.</p>
+                    </div>
+                    <div class="field">
+                        <label for="files">Files</label>
+                        <input id="files" name="files" type="file" multiple required th:accept="${accept}">
+                        <p class="field-hint" th:text="${typesLabel} + '. Up to ' + ${maxFileLabel} + ' each.'">PDF, DOCX. Up to 50 MB each.</p>
+                    </div>
+                    <button class="btn" type="submit" id="upload-btn">Upload</button>
+                </form>
+            </section>
+
+            <!-- Folders and file list -->
+            <section class="card" aria-labelledby="files-title">
+                <header class="card__head">
+                    <h2 class="card__title" id="files-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                        <span th:text="${selectedFolder != null} ? ${selectedFolder} : 'All files'">All files</span>
+                    </h2>
+                    <a class="pill pill--sm" th:if="${selectedFolder != null and !#lists.isEmpty(files)}"
+                       th:href="@{/locker/export(folder=${selectedFolder})}">Export this folder (ZIP)</a>
+                </header>
+
+                <nav class="folders" aria-label="Folders" th:if="${totalCount > 0}">
+                    <a class="folder-chip" th:href="@{/locker}"
+                       th:classappend="${selectedFolder == null} ? 'is-active'">
+                        All files <span class="count" th:text="${totalCount}">3</span>
+                    </a>
+                    <a class="folder-chip" th:each="f : ${folders}"
+                       th:href="@{/locker(folder=${f.name})}"
+                       th:classappend="${f.name == selectedFolder} ? 'is-active'">
+                        <span th:text="${f.name}">General</span> <span class="count" th:text="${f.count}">2</span>
+                    </a>
+                </nav>
+
+                <p class="empty" th:if="${#lists.isEmpty(files)}">
+                    No files here yet. Use <strong>Upload files</strong> above to add your first one.
+                </p>
+
+                <div class="table-wrap" th:unless="${#lists.isEmpty(files)}">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Folder</th>
+                                <th scope="col">Size</th>
+                                <th scope="col">Uploaded</th>
+                                <th scope="col"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="f : ${files}">
+                                <td>
+                                    <span class="file-name" th:text="${f.name}">Lesson plan.pdf</span>
+                                    <span class="badge" th:if="${!f.ext.isEmpty()}" th:text="${f.ext}">PDF</span>
+                                </td>
+                                <td th:text="${f.folder}">General</td>
+                                <td th:text="${f.size}">1.2 MB</td>
+                                <td th:text="${f.uploaded}">Nov 20, 2026</td>
+                                <td>
+                                    <div class="actions">
+                                        <a class="pill pill--sm"
+                                           th:href="@{/locker/files/{id}/download(id=${f.id})}"
+                                           th:attr="aria-label='Download ' + ${f.name}">Download</a>
+                                        <form th:action="@{/locker/files/{id}/delete(id=${f.id})}" method="post"
+                                              onsubmit="return confirm('Delete this file? This cannot be undone.')">
+                                            <input type="hidden" name="folder" th:value="${selectedFolder}">
+                                            <button type="submit" class="pill pill--sm pill--danger"
+                                                    th:attr="aria-label='Delete ' + ${f.name}">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+</body>
+</html>

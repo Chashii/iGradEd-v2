@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Departments')}"></head>
+<body>
+
+<header th:replace="~{fragments/layout :: topbar}"></header>
+
+<div class="shell">
+    <aside th:replace="~{fragments/layout :: sidebar(${active})}"></aside>
+
+    <main class="content" id="main">
+        <div class="stack">
+
+            <section class="card" aria-labelledby="dept-title">
+                <header class="card__head">
+                    <h1 class="card__title" id="dept-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6"/></svg>
+                        Departments
+                    </h1>
+                </header>
+
+                <p class="notice" th:if="${message}" role="status" th:text="${message}">Saved.</p>
+                <p class="notice notice--error" th:if="${error}" role="alert" th:text="${error}">Error.</p>
+
+                <form class="upload" method="post" th:action="@{/superadmin/departments}">
+                    <div class="field">
+                        <label for="name">New department</label>
+                        <input id="name" name="name" type="text" maxlength="80" required autocomplete="off"
+                               placeholder="e.g. Mathematics">
+                    </div>
+                    <button class="btn" type="submit">Add department</button>
+                </form>
+            </section>
+
+            <section class="card" aria-labelledby="dept-list-title">
+                <header class="card__head">
+                    <h2 class="card__title" id="dept-list-title">All departments</h2>
+                </header>
+
+                <p class="empty" th:if="${#lists.isEmpty(rows)}">No departments yet. Add the first one above.</p>
+
+                <div class="table-wrap" th:unless="${#lists.isEmpty(rows)}">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">People</th>
+                                <th scope="col"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="d : ${rows}">
+                                <td class="file-name" th:text="${d.name}">Mathematics</td>
+                                <td th:text="${d.people}">3</td>
+                                <td>
+                                    <div class="actions">
+                                        <form th:action="@{/superadmin/departments/{id}/delete(id=${d.id})}" method="post"
+                                              onsubmit="return confirm('Delete this department? Its people become unassigned and its announcements are removed.')">
+                                            <button type="submit" class="pill pill--sm pill--danger"
+                                                    th:attr="aria-label='Delete ' + ${d.name}">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+</body>
+</html>

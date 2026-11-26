@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Users')}"></head>
+<body>
+
+<header th:replace="~{fragments/layout :: topbar}"></header>
+
+<div class="shell">
+    <aside th:replace="~{fragments/layout :: sidebar(${active})}"></aside>
+
+    <main class="content" id="main">
+        <div class="stack">
+
+            <section class="card" aria-labelledby="users-title">
+                <header class="card__head">
+                    <h1 class="card__title" id="users-title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 010 7M18.5 14.5c1.8.8 3 2.6 3 5.5"/></svg>
+                        Users
+                    </h1>
+                </header>
+
+                <p class="notice" th:if="${message}" role="status" th:text="${message}">Saved.</p>
+                <p class="notice notice--error" th:if="${error}" role="alert" th:text="${error}">Error.</p>
+                <p class="field-hint pad" th:unless="${canEdit}">Only the super admin can change roles and departments.</p>
+
+                <div class="table-wrap">
+                    <table class="table table--users">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Department</th>
+                                <th scope="col">Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="u : ${users}">
+                                <td class="file-name" th:text="${u.fullName}">Ana Reyes</td>
+                                <td th:text="${u.email}">ana@school.edu</td>
+                                <td>
+                                    <span class="badge" th:unless="${canEdit and u.id != meId}" th:text="${u.role.label}">Teacher</span>
+                                    <form class="role-form" method="post" th:if="${canEdit and u.id != meId}"
+                                          th:action="@{/superadmin/users/{id}/role(id=${u.id})}">
+                                        <select name="role" th:attr="aria-label='Role for ' + ${u.fullName}">
+                                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r.label}"
+                                                    th:selected="${r == u.role}">Teacher</option>
+                                        </select>
+                                        <button type="submit" class="pill pill--sm">Save</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <span th:unless="${canEdit}" th:text="${u.departmentName != null} ? ${u.departmentName} : '—'">Math</span>
+                                    <form class="role-form" method="post" th:if="${canEdit}"
+                                          th:action="@{/superadmin/users/{id}/department(id=${u.id})}">
+                                        <select name="departmentId" th:attr="aria-label='Department for ' + ${u.fullName}">
+                                            <option value="">None</option>
+                                            <option th:each="d : ${departments}" th:value="${d.id}" th:text="${d.name}"
+                                                    th:selected="${d.id == u.departmentId}">Math</option>
+                                        </select>
+                                        <button type="submit" class="pill pill--sm">Save</button>
+                                    </form>
+                                </td>
+                                <td th:text="${u.createdOn}">2026-11-20</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+</body>
+</html>

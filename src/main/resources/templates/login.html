@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Log in')}"></head>
+<body>
+
+<main class="auth">
+    <section class="card auth__card" aria-labelledby="auth-title">
+        <a class="logo auth__brand" th:href="@{/login}" aria-label="iGradEd">
+            <img th:src="@{/img/logo.svg}" alt="" width="40" height="40">
+            <span class="logo__text">i<strong>GradEd</strong></span>
+        </a>
+
+        <div>
+            <h1 class="auth__title" id="auth-title">Welcome back</h1>
+            <p class="auth__sub">Log in to your account</p>
+        </div>
+
+        <p class="notice notice--error" th:if="${param.error}" role="alert">Incorrect email or password.</p>
+        <p class="notice" th:if="${param.logout}" role="status">You have been logged out.</p>
+        <p class="notice" th:if="${param.registered}" role="status">Account created. You can log in now.</p>
+
+        <form class="form" th:action="@{/login}" method="post">
+            <div class="field">
+                <label for="username">Email</label>
+                <input id="username" name="username" type="email" autocomplete="username" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="btn" type="submit">Log in</button>
+        </form>
+
+        <p class="auth__alt">New here? <a th:href="@{/signup}">Create an account</a></p>
+    </section>
+</main>
+
+</body>
+</html>

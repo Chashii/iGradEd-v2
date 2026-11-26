@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · iGradEd'">iGradEd</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/logo.svg}">
+    <!-- Apply the saved theme before the page paints, so there is no flash of the wrong colors -->
+    <script>
+        (function () {
+            var t = "dark";
+            try { t = localStorage.getItem("igraded.theme"); } catch (e) { /* ignore */ }
+            if (t !== "light") t = "dark";
+            document.documentElement.setAttribute("data-theme", t);
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+
+<!-- Top bar: menu button (left) · logo (center) · profile (right) -->
+<header class="topbar" th:fragment="topbar">
+    <div class="topbar__side topbar__side--left">
+        <button type="button" class="icon-btn" id="sidebar-toggle"
+                aria-label="Toggle menu" aria-controls="sidebar" aria-expanded="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+    </div>
+
+    <a class="logo" th:href="@{/}" aria-label="iGradEd home">
+        <img th:src="@{/img/logo.svg}" alt="" width="32" height="32">
+        <span class="logo__text">i<strong>GradEd</strong></span>
+    </a>
+
+    <div class="topbar__side topbar__side--right">
+        <a class="icon-btn icon-btn--profile" th:href="@{/profile}" aria-label="Your profile" title="Your profile">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
+            </svg>
+        </a>
+    </div>
+</header>
+
+<!-- Collapsible left sidebar -->
+<aside class="sidebar" id="sidebar" aria-label="Main navigation" th:fragment="sidebar(active)">
+    <nav class="sidebar__inner">
+        <ul class="nav">
+            <li>
+                <a class="nav__link" th:href="@{/}" th:classappend="${active == 'home'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'home' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav__link" th:href="@{/grades}" th:classappend="${active == 'grades'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'grades' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+                    <span>Grades</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav__link" th:href="@{/attendance}" th:classappend="${active == 'attendance'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'attendance' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav__link" th:href="@{/files}" th:classappend="${active == 'files'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'files' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                    <span>Files</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav__link" th:href="@{/locker}" th:classappend="${active == 'locker'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'locker' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+                    <span>Locker</span>
+                </a>
+            </li>
+            <!-- Only admins and super admins see this link -->
+            <li sec:authorize="hasAnyRole('ADMIN','SUPER_ADMIN')">
+                <a class="nav__link" th:href="@{/admin/users}" th:classappend="${active == 'users'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'users' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 010 7M18.5 14.5c1.8.8 3 2.6 3 5.5"/></svg>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li sec:authorize="hasAnyRole('ADMIN','SUPER_ADMIN')">
+                <a class="nav__link" th:href="@{/admin/tasks}" th:classappend="${active == 'tasks'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'tasks' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+                    <span>Tasks</span>
+                </a>
+            </li>
+            <li sec:authorize="hasAnyRole('ADMIN','SUPER_ADMIN')">
+                <a class="nav__link" th:href="@{/admin/announcements}" th:classappend="${active == 'announcements'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'announcements' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l5 4V6L6 10H4a1 1 0 00-1 1zM15 9a4 4 0 010 6"/></svg>
+                    <span>Announcements</span>
+                </a>
+            </li>
+            <li sec:authorize="hasRole('SUPER_ADMIN')">
+                <a class="nav__link" th:href="@{/superadmin/departments}" th:classappend="${active == 'departments'} ? 'is-active'"
+                   th:attr="aria-current=${active == 'departments' ? 'page' : null}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6"/></svg>
+                    <span>Departments</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar__bottom">
+            <!-- Light / dark mode switch -->
+            <button type="button" class="nav__link theme-toggle" id="theme-toggle" role="switch" aria-checked="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+                <span>Dark mode</span>
+                <span class="switch" aria-hidden="true"></span>
+            </button>
+
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="nav__link logout-btn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5a2 2 0 00-2 2v12a2 2 0 002 2h4M16 16l4-4-4-4M20 12H9"/></svg>
+                    <span>Log out</span>
+                </button>
+            </form>
+        </div>
+    </nav>
+</aside>
+
+</body>
+</html>

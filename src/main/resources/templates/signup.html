@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Sign up')}"></head>
+<body>
+
+<main class="auth">
+    <section class="card auth__card" aria-labelledby="auth-title">
+        <a class="logo auth__brand" th:href="@{/login}" aria-label="iGradEd">
+            <img th:src="@{/img/logo.svg}" alt="" width="40" height="40">
+            <span class="logo__text">i<strong>GradEd</strong></span>
+        </a>
+
+        <div>
+            <h1 class="auth__title" id="auth-title">Create your account</h1>
+            <p class="auth__sub">Teacher accounts are free to create.</p>
+        </div>
+
+        <form class="form" th:action="@{/signup}" th:object="${form}" method="post" novalidate>
+            <div class="field">
+                <label for="fullName">Full name</label>
+                <input id="fullName" type="text" th:field="*{fullName}" autocomplete="name" maxlength="80" required autofocus>
+                <p class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}">Error</p>
+            </div>
+            <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" th:field="*{email}" autocomplete="email" maxlength="120" required>
+                <p class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Error</p>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" type="password" th:field="*{password}" autocomplete="new-password" minlength="8" maxlength="72" required>
+                <p class="field-hint">At least 8 characters.</p>
+                <p class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Error</p>
+            </div>
+            <div class="field">
+                <label for="confirmPassword">Confirm password</label>
+                <input id="confirmPassword" type="password" th:field="*{confirmPassword}" autocomplete="new-password" required>
+                <p class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Error</p>
+            </div>
+            <button class="btn" type="submit">Sign up</button>
+        </form>
+
+        <p class="auth__alt">Already have an account? <a th:href="@{/login}">Log in</a></p>
+    </section>
+</main>
+
+</body>
+</html>
